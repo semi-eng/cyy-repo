@@ -1,0 +1,320 @@
+# AWSTemplateFormatVersion: 2010-09-09
+# Description: |
+  
+Parameters:
+  # envType:
+  #   Description: Enter your envType
+  #   Type: String
+  #   Default: dev
+  #   AllowedValues:
+  #     - dev
+  #     - test
+  #     - prod
+
+  author:
+    Description: Enter your name
+    Type: String
+    Default: qlite-dev-lky
+# Metadata:
+  
+Mappings:
+  CidrMap:
+    dev:
+      vpc: 10.0.0.0/16
+      subnetpub1a: 10.0.1.0/24
+      subnetpub1c: 10.0.2.0/24
+      subnetpri1a: 10.0.3.0/24
+      subnetpri1c: 10.0.4.0/24
+      subnetnat1a: 10.0.5.0/24
+      subnetnat1c: 10.0.6.0/24
+    test:
+      vpc: 10.100.0.0/16
+      subnetpub1a: 10.100.1.0/24
+      subnetpub1c: 10.100.2.0/24
+      subnetpri1a: 10.100.3.0/24
+      subnetpri1c: 10.100.4.0/24
+      subnetnat1a: 10.100.5.0/24
+      subnetnat1c: 10.100.6.0/24
+    prod:
+      vpc: 10.200.0.0/16
+      subnetpub1a: 10.200.1.0/24
+      subnetpub1c: 10.200.2.0/24
+      subnetpri1a: 10.200.3.0/24
+      subnetpri1c: 10.200.4.0/24
+      subnetnat1a: 10.200.5.0/24
+      subnetnat1c: 10.200.6.0/24
+
+  EnvMap:
+    account:
+      "111111111111": dev
+      "149536477717": test
+      "333333333333": prod
+
+Conditions:
+  CreateNgw: !Equals 
+    - !FindInMap [ EnvMap, account, !Ref "AWS::AccountId" ]
+    - prod  
+  
+Resources:
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !FindInMap [ CidrMap, !FindInMap [ EnvMap, account, !Ref "AWS::AccountId" ], vpc ]
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-vpc-cfn
+
+  myIgw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-igw-cfn
+
+  myIgwAttach:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: myVPC
+      InternetGatewayId:
+        Ref: myIgw
+
+  mySubnetPub1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: 
+        Ref: myVPC
+      CidrBlock: !FindInMap [ CidrMap, !FindInMap [ EnvMap, account, !Ref "AWS::AccountId" ], subnetpub1a ]
+      AvailabilityZone: "ap-northeast-1a"
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-subnet-pub1a-cfn
+
+  mySubnetPri1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: 
+        Ref: myVPC
+      CidrBlock: !FindInMap [ CidrMap, !FindInMap [ EnvMap, account, !Ref "AWS::AccountId" ], subnetpri1a ]
+      AvailabilityZone: "ap-northeast-1a"
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-subnet-pri1a-cfn
+
+  mySubnetPub1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: 
+        Ref: myVPC
+      CidrBlock: !FindInMap [ CidrMap, !FindInMap [ EnvMap, account, !Ref "AWS::AccountId" ], subnetpub1c ]
+      AvailabilityZone: "ap-northeast-1c"
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-subnet-pub1c-cfn
+
+  mySubnetPri1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: 
+        Ref: myVPC
+      CidrBlock: !FindInMap [ CidrMap, !FindInMap [ EnvMap, account, !Ref "AWS::AccountId" ], subnetpri1c ]
+      AvailabilityZone: "ap-northeast-1c"
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-subnet-pri1c-cfn
+
+  mySubnetNat1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: 
+        Ref: myVPC
+      CidrBlock: !FindInMap [ CidrMap, !FindInMap [ EnvMap, account, !Ref "AWS::AccountId" ], subnetnat1a ]
+      AvailabilityZone: "ap-northeast-1a"
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-subnet-nat1a-cfn
+
+  mySubnetNat1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: 
+        Ref: myVPC
+      CidrBlock: !FindInMap [ CidrMap, !FindInMap [ EnvMap, account, !Ref "AWS::AccountId" ], subnetnat1c ]
+      AvailabilityZone: "ap-northeast-1c"
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-subnet-nat1c-cfn
+
+  myRtbPub:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-rtb-pub-cfn
+
+  myRtbPri1a:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-rtb-pri1a-cfn
+
+  myRtbPri1c:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-rtb-pri1c-cfn
+
+  myRtbNat1a:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-rtb-nat1a-cfn
+
+  myRtbNat1c:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-rtb-nat1c-cfn
+
+  rtbSubPub1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: mySubnetPub1a
+      RouteTableId:
+        Ref: myRtbPub
+
+  rtbSubPub1c:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: mySubnetPub1c
+      RouteTableId:
+        Ref: myRtbPub
+
+  rtbSubPri1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: mySubnetPri1a
+      RouteTableId:
+        Ref: myRtbPri1a
+
+  rtbSubPri1c:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: mySubnetPri1c
+      RouteTableId:
+        Ref: myRtbPri1c
+
+  rtbSubNat1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: mySubnetNat1a
+      RouteTableId:
+        Ref: myRtbNat1a
+
+  rtbSubNat1c:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: mySubnetNat1c
+      RouteTableId:
+        Ref: myRtbNat1c
+
+  routeIgw:
+    Type: AWS::EC2::Route
+    Properties:
+        RouteTableId:
+          Ref: myRtbPub
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId:
+          Ref: myIgw
+  
+# 以下は有料なので、作成したら、コンソール画面で削除してください。テンプレートの内容を削除しないでください。
+
+  eip1a:
+    Type: AWS::EC2::EIP
+    Condition: CreateNgw
+    Properties:
+        Domain: myVPC
+
+  ngw1a:
+    Type: AWS::EC2::NatGateway
+    Condition: CreateNgw
+    Properties:
+        AllocationId: !GetAtt eip1a.AllocationId
+        SubnetId: 
+          Ref: mySubnetPub1a
+        Tags:
+        - Key: Name
+          Value: !Sub ${author}-ngw-1a-cfn
+
+  routeNgw1a:
+    Type: AWS::EC2::Route
+    Condition: CreateNgw
+    Properties:
+        RouteTableId: 
+          Ref: myRtbNat1a
+        DestinationCidrBlock: '0.0.0.0/0'
+        NatGatewayId: 
+          Ref: ngw1a
+
+  ngw1c:
+    Type: AWS::EC2::NatGateway
+    Condition: CreateNgw
+    Properties:
+        AllocationId: !GetAtt eip1c.AllocationId
+        SubnetId: 
+          Ref: mySubnetPub1c
+        Tags:
+        - Key: Name
+          Value: !Sub ${author}-ngw-1c-cfn
+
+  eip1c:
+    Type: AWS::EC2::EIP
+    Condition: CreateNgw
+    Properties:
+        Domain: myVPC
+
+  routeNgw1c:
+    Type: AWS::EC2::Route
+    Condition: CreateNgw
+    Properties:
+        RouteTableId: 
+          Ref: myRtbNat1c
+        DestinationCidrBlock: '0.0.0.0/0'
+        NatGatewayId: 
+          Ref: ngw1c
+  
+# Transform:
+  
+Outputs:
+  opmyVPC:
+    Value: !Ref myVPC
+    Export:
+      Name: opVPC
+
+  opmySubnetPub1a:
+    Value: !Ref mySubnetPub1a
+    Export:
+      Name: opSubnetPub1a
+  
+
+  
