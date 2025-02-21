@@ -1,8 +1,8 @@
 Resources:
   myVpc:
-    Type:AWS::EC2::VPC
+    Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
       Tags:
-        -key：Name
-        
+        - key: Name
+          Value: qlite-dev-cyy-vpc-pipeline
